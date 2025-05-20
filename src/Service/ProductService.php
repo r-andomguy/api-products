@@ -15,15 +15,15 @@ class ProductService
     public function getAll($adminUserId)
     {
         $query = "
-            SELECT p.*, c.title as category
+            SELECT p.*, 
+                   c.title as category
             FROM product p
-            INNER JOIN product_category pc ON pc.product_id = p.id
-            INNER JOIN category c ON c.id = pc.id
+                INNER JOIN product_category pc ON p.id = pc.product_id 
+                INNER JOIN category c ON pc.cat_id = c.id 
             WHERE p.company_id = {$adminUserId}
         ";
 
         $stm = $this->pdo->prepare($query);
-
         $stm->execute();
 
         return $stm;
