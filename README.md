@@ -96,7 +96,7 @@ Para a listagem de produtos:
 - [X] Gostaria de saber qual usuário mudou o preço do produto `iphone 8` por último.
 
 ### Correção de bug
-- [ ] Ao rodar os teste unitários com `composer test` são apontados erros. Eles precisam ser resolvidos, com documentação sobre a causa e a solução.
+- [X] Ao rodar os teste unitários com `composer test` são apontados erros. Eles precisam ser resolvidos, com documentação sobre a causa e a solução.
 
 ## Features
 Novas funcionalidades requisitadas pelo cliente
@@ -181,3 +181,4 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 - Para os filtros do produtos, pensei em algumas rotinas que já tive contato e que utilizavam uma função para filtrar ou ordenar. Essa função recebia os parâmetros repassados no request e complementava as queries. Basicamente esse foi o caminho que segui para essas demandas, creio que seja uma maneira segura para filtrar os dados com base na solicitação do cliente, pois ao utilizar repassar as rotas pelo front basta informar os parâmetros active (0 ou 1), category (o id que será pesquisado) e created_at com valor ASC ou DESC. 
 - Para a demanda do relatório foi identificado que tinha erro de Array to string conversion. Depois de verificar como estava retornando os registreos no $data, identifiquei que estava retornando um array para o log e que precisava tratar esse retorno dos dados de getLog. Assim, entendi que seria possível tratar uma string para cada dado encontrado, fiz um ajuste no sql de getLog para puxar o nome dos usuários, depois fiz uma array de tradução para as ações do usuário e por fim fui concatenando as informações para ter uma string que se encaixa com a solicitação do cliente.
 - Para a demanda de listar o último log, depois de ler me perguntei se era pra implementar uma nova rota, pois o report já mostra essas informações. Mas como entendi que precisa ser uma nova rota, fui no arquivos de rotas, adicionei um novo parâmetro $group->get('/last-edit/{id}', [ProductController::class, 'getLastLog']). No meu controller adicionei essa nova função getLastLog, que segue o mesmo padrão de busca existente na função  getLog - porém a ideia é ordenar pelo timestamp decrescente e limit para buscar apenas 1 registro. Essa nova rota foi adicionada no postman e testada, onde verifiquei que retornou o registro correto para o iphone 8.
+- Correção do teste unitário: o erro estava no teste testHydrateByFetch, onde era feita um teste se o preço do produto era 99.99 a partir do resultado do $product = Product::hydrateByFetch($fetch). O preço do produto está sendo retornado como 99, ou seja, um inteiro, ao invés de float - assim, verifiquei a função na model Product e ajustei para retornar valor float.

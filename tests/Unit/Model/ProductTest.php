@@ -30,11 +30,11 @@ class ProductTest extends TestCase
     $fetch->created_at = '2023-10-01';
 
     $product = Product::hydrateByFetch($fetch);
-
+    
     $this->assertEquals(1, $product->id);
     $this->assertEquals(2, $product->companyId);
     $this->assertEquals('Test Product', $product->title);
-    $this->assertEquals(99.99, $product->price);
+    $this->assertEquals(99.99,$product->price);
     $this->assertTrue($product->active);
     $this->assertEquals('2023-10-01', $product->createdAt);
   }
