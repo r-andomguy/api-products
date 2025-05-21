@@ -33,7 +33,7 @@ class ReportController
             'Logs de Alterações'
         ];
         
-        $stm = $this->productService->getAll($adminUserId);
+        $stm = $this->productService->getAll($adminUserId, null, null);
         $products = $stm->fetchAll();
 
         foreach ($products as $i => $product) {
@@ -42,14 +42,30 @@ class ReportController
 
             $stm = $this->productService->getLog($product->id);
             $productLogs = $stm->fetchAll();
-            
+            $logs = '';
+
+            $actionTranslations = [
+                'create' => 'Criação',
+                'update' => 'Atualização',
+                'delete' => 'Remoção',
+            ];
+
+            if (count($productLogs) > 0) {
+                foreach ($productLogs as $log) {
+                    $action = $actionTranslations[$log->action] ?? $log->action; 
+                    $logs .= ucwords($log->admin_name ?? 'Usuário Desconhecido') . ', ' . $action . $log->timestamp . '<br>';
+                }
+            } else {
+                $logs = 'Sem alterações registradas';
+            }
+
             $data[$i+1][] = $product->id;
             $data[$i+1][] = $companyName;
             $data[$i+1][] = $product->title;
             $data[$i+1][] = $product->price;
             $data[$i+1][] = $product->category;
             $data[$i+1][] = $product->created_at;
-            $data[$i+1][] = $productLogs;
+            $data[$i+1][] = $logs;
         }
         
         $report = "<table style='font-size: 10px;'>";
