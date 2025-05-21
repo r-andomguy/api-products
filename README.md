@@ -78,9 +78,9 @@ Modificações requisitadas pelo cliente em funcionalidades já existentes
 
 ### Filtros e Ordenamento
 Para a listagem de produtos:
-- [ ] Gostaria de poder filtrar os produtos ativos ou inativos;
-- [ ] Gostaria de poder filtrar os produtos por categoria;
-- [ ] Gostaria de poder ordenar os produtos por data de cadastro.
+- [X] Gostaria de poder filtrar os produtos ativos ou inativos;
+- [X] Gostaria de poder filtrar os produtos por categoria;
+- [X] Gostaria de poder ordenar os produtos por data de cadastro.
 
 ### Relatório
 - [ ] O relatório não está mostrando a coluna de logs corretamente, se possível, gostaria de trazer no seguinte formato:
@@ -178,3 +178,4 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 - Referente a busca de todos os produtos, a query de getAll, no ProductService estava com um problema de lógica pois realizava um INNER JOIN com a tabela category usando o pc.id (product_category.id) ao invés de pc.cat_it (product_category.cat_id). Foi implementado a ligação correta de pc.cat_id = c.id (category.id);
 - Para a demanda de category = null na busca de produtos individuais, foi verificado que na tabela category a coluan company_id tinha registros nulos. Visto que o campo category é preenchido através da função getOne, da CategoryService, nessa função é utilizado o company_id do usuário logado. Assim foi necessário implementar uma migration para corrigir os dados nulos na tabela.
 - Para a terceira demanda das categorias, a ideia parte de identificar se estava retornando todas as categorias do registro informado. Assim, foi identificado que estava utilizando apenas um fetch() para buscar a categoria, o que foi alterado para fetchAll() e que retornou os id's das categorias cadastradas para esse produto. Depois pensei em usar o foreach para acessar cada id dessas categorias, reciclei a lógica anteior para adicionar a categoria ao produto. No entanto tive um problema: estava adicionando apenas "house" para a categoria. Depois de uma pesquisa entendi que estava sobreescrevendo a mesma instância do produto, causando esse erro ao retornar os registros. Então fiz um clone de product e continuei a lógica para adicionar os registros a variável $data.
+- Para os filtros do produtos, pensei em algumas rotinas que já tive contato e que utilizavam uma função para filtrar ou ordenar. Essa função recebia os parâmetros repassados no request e complementava as queries. Basicamente esse foi o caminho que segui para essas demandas, creio que seja uma maneira segura para filtrar os dados com base na solicitação do cliente, pois ao utilizar repassar as rotas pelo front basta informar os parâmetros active (0 ou 1), category (o id que será pesquisado) e created_at com valor ASC ou DESC. 

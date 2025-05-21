@@ -12,7 +12,7 @@ class ProductService
         $this->pdo = DB::connect();
     }
 
-    public function getAll($adminUserId)
+    public function getAll($adminUserId, $filters, $orderBy)
     {
         $query = "
             SELECT p.*, 
@@ -23,6 +23,14 @@ class ProductService
             WHERE p.company_id = {$adminUserId}
         ";
 
+        if($filters !== null) {
+            $query .= $filters;
+        } 
+        
+        if($orderBy !== null) {
+            $query .= $orderBy;
+        }
+        
         $stm = $this->pdo->prepare($query);
         $stm->execute();
 
@@ -161,5 +169,39 @@ class ProductService
         $stm->execute();
 
         return $stm;
+    }
+
+    public function setOrderBy($direction = 'DESC'): string
+    {
+        $allowed = ['ASC', 'DESC'];
+        $dir = strtoupper($direction);
+
+        if (!in_array($dir, $allowed)) {
+            $dir = 'DESC'; 
+        }
+
+        return " ORDER BY p.created_at $dir";
+    }
+    
+    public function setFilter(string $key, $value): string
+    {
+        $filter = '';
+
+        switch ($key) {
+            case 'active':
+                $value = (int) $value;
+                $filter = 'AND p.active = ' . $value;
+                break;
+
+            case 'category':
+                $value = (int) $value;
+                $filter = ' AND pc.cat_id = ' . $value;
+                break;
+
+            default:
+            break;
+        }
+
+        return $filter;
     }
 }

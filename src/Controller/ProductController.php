@@ -22,8 +22,23 @@ class ProductController
     public function getAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $adminUserId = $request->getHeader('admin_user_id')[0];
-        
-        $stm = $this->service->getAll($adminUserId);
+        $queryParams = $request->getQueryParams();
+        $filters = null;
+        $orderBy = null;
+
+        if (isset($queryParams['active'])) {
+          $filters = $this->service->setFilter('active', $queryParams['active']) . ' ';
+        }
+
+        if (isset($queryParams['category'])) {
+            $filters .= $this->service->setFilter('category', $queryParams['category']) . ' ';
+        }
+
+        if (isset($queryParams['created_at'])) {
+            $orderBy = $this->service->setOrderBy($queryParams['created_at']);
+        }
+
+        $stm = $this->service->getAll($adminUserId, $filters, $orderBy);
         $response->getBody()->write(json_encode($stm->fetchAll()));
         return $response->withStatus(200);
     }
@@ -42,7 +57,7 @@ class ProductController
                 $fetchedCategory = $this->categoryService->getOne($adminUserId, $category->id)->fetch();        
                 $productClone = clone $product;
                 $productClone->setCategory($fetchedCategory->title);
-                $data[] = $productClone;
+                $data[] = $fetchedCategory;
             }
         }
         
