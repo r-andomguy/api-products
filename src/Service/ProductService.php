@@ -173,6 +173,22 @@ class ProductService
         return $stm;
     }
 
+    public function getLastLog($id)
+    {
+        $stm = $this->pdo->prepare("
+            SELECT pl.*,
+                   admin.name AS admin_name
+            FROM product_log pl
+                LEFT JOIN admin_user AS admin ON pl.admin_user_id = admin.id 
+            WHERE pl.product_id = {$id}
+            ORDER BY pl.timestamp DESC 
+            LIMIT 1
+        ");
+        $stm->execute();
+
+        return $stm;
+    }
+
     public function setOrderBy($direction = 'DESC'): string
     {
         $allowed = ['ASC', 'DESC'];

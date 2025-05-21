@@ -65,6 +65,14 @@ class ProductController
         return $response->withStatus(200);
     }
 
+    public function getLastLog(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $stm = $this->service->getLastLog($args['id']);
+
+        $response->getBody()->write(json_encode($stm->fetch()));
+        return $response->withStatus(200);
+    }
+
     public function insertOne(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $body = $request->getParsedBody();
