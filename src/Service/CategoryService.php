@@ -7,38 +7,42 @@ use Contatoseguro\TesteBackend\Config\DB;
 class CategoryService
 {
     private \PDO $pdo;
-    public function __construct()
-    {
+    public function __construct() {
         $this->pdo = DB::connect();
     }
 
-    public function getAll($adminUserId)
+    public function getAll($adminUserId, $lang  = 'en')
     {
         $query = "
-            SELECT *
+            SELECT c.company_id,
+                   (CASE WHEN 
+                   ct.label IS NULL THEN c.title ELSE ct.label END) AS title,
+                   c.active
             FROM category c
+                LEFT JOIN category_translation ct ON c.id = ct.category_id AND ct.lang_code IN('{$lang}')
             WHERE c.company_id = {$this->getCompanyFromAdminUser($adminUserId)}
         ";
-
         $stm = $this->pdo->prepare($query);
-
         $stm->execute();
 
         return $stm;
     }
 
-    public function getOne($adminUserId, $categoryId)
+    public function getOne($adminUserId, $categoryId, $lang  = 'en')
     {
         $query = "
-            SELECT *
+            SELECT c.company_id,
+                   (CASE WHEN 
+                   ct.label IS NULL THEN c.title ELSE ct.label END) AS title,
+                   c.active
             FROM category c
+                LEFT JOIN category_translation ct ON c.id = ct.category_id AND ct.lang_code = '{$lang}'
             WHERE c.active = 1
             AND c.company_id = {$this->getCompanyFromAdminUser($adminUserId)}
             AND c.id = {$categoryId}
         ";
 
         $stm = $this->pdo->prepare($query);
-
         $stm->execute();
 
         return $stm;
@@ -119,4 +123,29 @@ class CategoryService
 
         return $stm->fetch()->company_id;
     }
+
+    public function insertTranslations($categoryId, array $translations): array
+    {
+        $codes = array_column($translations, 'lang_code');
+
+        if (count($codes) !== count(array_unique($codes))) {
+            return [
+                'success' => false,
+                'error' => 'Existem traduções repetidas no envio. Nenhuma foi salva.'
+            ];
+        }
+
+        $this->pdo->beginTransaction();
+
+        foreach ($translations as $translation) {
+            $lang = $translation['lang_code'];
+            $label = $translation['label'];
+            $query = "INSERT INTO category_translation (category_id, lang_code, label) VALUES ({$categoryId}, '{$lang}', '{$label}')";
+            $this->pdo->prepare($query)->execute();
+        }
+
+        $this->pdo->commit();
+        return ['success' => true];
+    }
+    
 }

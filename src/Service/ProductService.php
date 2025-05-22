@@ -12,14 +12,15 @@ class ProductService
         $this->pdo = DB::connect();
     }
 
-    public function getAll($adminUserId, $filters, $orderBy)
+    public function getAll($adminUserId, $filters, $orderBy, $lang = 'en')
     {
         $query = "
             SELECT p.*, 
-                   c.title as category
+                  (CASE WHEN ct.label IS NULL THEN c.title ELSE ct.label END) AS category
             FROM product p
                 INNER JOIN product_category pc ON p.id = pc.product_id 
                 INNER JOIN category c ON pc.cat_id = c.id 
+                LEFT JOIN category_translation ct ON c.id = ct.category_id AND ct.lang_code IN ('{$lang}')
             WHERE p.company_id = {$adminUserId}
         ";
 
@@ -221,5 +222,17 @@ class ProductService
         }
 
         return $filter;
+    }
+
+    public function getCategoryTranslation($categoryId, $lang = 'en') 
+    {
+        $query = "SELECT (CASE WHEN ct.label IS NULL THEN c.title ELSE ct.label END) AS title 
+                  FROM category_translation ct
+                    LEFT JOIN category c ON ct.category_id = c.id
+                  WHERE ct.category_id = {$categoryId} AND ct.lang_code IN ('{$lang}')"; 
+        $stm = $this->pdo->prepare($query);
+        $stm->execute();
+
+        return  $stm->fetchColumn();
     }
 }

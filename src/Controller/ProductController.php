@@ -23,6 +23,7 @@ class ProductController
     {
         $adminUserId = $request->getHeader('admin_user_id')[0];
         $queryParams = $request->getQueryParams();
+        $lang = $request->getQueryParams()['lang'] ?? 'en';
         $filters = null;
         $orderBy = null;
 
@@ -38,7 +39,7 @@ class ProductController
             $orderBy = $this->service->setOrderBy($queryParams['created_at']);
         }
 
-        $stm = $this->service->getAll($adminUserId, $filters, $orderBy);
+        $stm = $this->service->getAll($adminUserId, $filters, $orderBy,strtolower($lang));
         $response->getBody()->write(json_encode($stm->fetchAll()));
         return $response->withStatus(200);
     }
@@ -47,9 +48,10 @@ class ProductController
     {
         $stm = $this->service->getOne($args['id']);
         $product = Product::hydrateByFetch($stm->fetch());
-
+        
         $adminUserId = $request->getHeader('admin_user_id')[0];
         $productCategories = $this->categoryService->getProductCategory($product->id)->fetchAll();
+        $lang = $request->getQueryParams()['lang'] ?? 'en';
         $data = [];
         
         if($productCategories) {
@@ -57,6 +59,12 @@ class ProductController
                 $fetchedCategory = $this->categoryService->getOne($adminUserId, $category->id)->fetch();        
                 $productClone = clone $product;
                 $productClone->setCategory($fetchedCategory->title);
+
+                if($lang) {
+                    $title = $this->service->getCategoryTranslation($category->id, $lang);
+                    $fetchedCategory->title = $title;
+                }
+
                 $data[] = $fetchedCategory;
             }
         }

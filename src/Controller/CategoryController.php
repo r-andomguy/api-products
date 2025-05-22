@@ -5,6 +5,7 @@ namespace Contatoseguro\TesteBackend\Controller;
 use Contatoseguro\TesteBackend\Service\CategoryService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Slim\Psr7\Response;
 
 class CategoryController
 {
@@ -18,8 +19,9 @@ class CategoryController
     public function getAll(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $adminUserId = $request->getHeader('admin_user_id')[0];
-        
-        $stm = $this->service->getAll($adminUserId);
+        $lang = $request->getQueryParams()['lang'] ?? 'en';
+
+        $stm = $this->service->getAll($adminUserId, strtolower($lang));
         $response->getBody()->write(json_encode($stm->fetchAll()));
         return $response->withStatus(200);
     }
@@ -27,7 +29,8 @@ class CategoryController
     public function getOne(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $adminUserId = $request->getHeader('admin_user_id')[0];
-        $stm = $this->service->getOne($adminUserId, $args['id']);
+        $lang = $request->getQueryParams()['lang'] ?? 'en';
+        $stm = $this->service->getOne($adminUserId, $args['id'], strtolower($lang));
 
         $response->getBody()->write(json_encode($stm->fetchAll()));
         return $response->withStatus(200);
@@ -65,6 +68,21 @@ class CategoryController
             return $response->withStatus(200);
         } else {
             return $response->withStatus(404);
+        }
+    }
+
+    public function insertTranslations(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface 
+    {
+        $data = $request->getParsedBody();
+        $categoryId = $args['id'];
+
+        $result = $this->service->insertTranslations($categoryId, $data['translations'] ?? []);
+
+        if($result['success']) {
+            return $response->withStatus(200);
+        } else {
+            $response->getBody()->write(json_encode(['error' => $result['error']]));
+            return $response->withStatus(400);
         }
     }
 }
