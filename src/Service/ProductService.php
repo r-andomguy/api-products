@@ -56,6 +56,40 @@ class ProductService
         return $stm;
     }
 
+    public function getComments($productId)
+    {
+        $query = "SELECT pc.*, 
+                         u.name AS user_name,
+                  (SELECT COUNT(*) FROM comment_likes WHERE comment_id = pc.id) AS likes
+                  FROM product_comments pc
+                    JOIN admin_user u ON u.id = pc.user_id
+                  WHERE pc.product_id = {$productId}
+                ORDER BY pc.created_at ASC
+            ";
+        $stm = $this->pdo->prepare($query);
+        $stm->execute();
+        $all = $stm->fetchAll();
+
+        $byParent = [];
+        foreach ($all as $comment) {
+            $byParent[$comment->parent_id][] = $comment;
+        }
+
+        $buildTree = function ($parentId) use (&$buildTree, $byParent) {
+            $allComments = [];
+            if (isset($byParent[$parentId])) {
+                foreach ($byParent[$parentId] as $comment) {
+                    $comment->replies = $buildTree($comment->id);
+                    $allComments[] = $comment;
+                }
+            }
+            
+            return $allComments;
+        };
+
+        return $buildTree(null);
+    }
+
     public function insertOne($body, $adminUserId)
     {
         $stock = $body['stock'] ?? 0;
@@ -75,7 +109,6 @@ class ProductService
             )
         ");
 
-        var_dump($stm);
         if (!$stm->execute())
             return false;
 
@@ -107,6 +140,56 @@ class ProductService
 
         return $stm->execute();
     }
+
+    public function insertComment($body, $userId)
+    {
+        $parentId = $body['parentId'] ?? null;
+        
+        if($parentId !== null && !$this->hasParentId($parentId)){
+           $parentId = null;
+        }
+
+        $query = "INSERT INTO product_comments (
+                product_id, 
+                user_id, 
+                content, 
+                parent_id,
+                created_at
+            ) VALUES (
+                {$body['productId']},
+                {$userId},
+                '{$body['content']}',
+                {$parentId},
+                '{$body['createdAt']}'
+            )";
+        var_dump($query);
+        $stm = $this->pdo->prepare($query);
+        
+        if(!$stm->execute()){
+            return false;
+        }
+
+        return $stm;
+    }
+
+    public function insertCommentLike($body, $commentId)
+    {
+        $query = "INSERT INTO comment_likes (
+                comment_id, 
+                user_id, 
+                created_at
+            ) VALUES (
+                {$commentId},
+                {$body['userId']},
+                '{$body['createdAt']}'
+            )";
+
+        $stm = $this->pdo->prepare($query);
+        $stm->execute();
+
+        return $stm;
+    }
+
 
     public function updateOne($id, $body, $adminUserId)
     {
@@ -169,6 +252,24 @@ class ProductService
         ");
 
         return $stm->execute();
+    }
+
+    public function deleteComment($idComment, $userId)
+    {
+        if(!$this->isCommentAuthor($idComment, $userId)) {
+            return false;
+        }
+
+        $stm = $this->pdo->prepare("
+            DELETE FROM product_comments WHERE id = {$idComment} AND user_id = {$userId}
+        ");
+       
+        if (!$stm->execute()) {
+            return false;
+        }
+
+        $stm->execute();
+        return true;
     }
 
     public function getLog($id)
@@ -270,4 +371,30 @@ class ProductService
         return true;
     }
 
+    public function hasParentId($id) {
+        $query = "SELECT * FROM product_comments WHERE id = {$id}";
+
+        $stm = $this->pdo->prepare($query);
+        $stm->execute();
+        
+        if(empty($stm->fetch())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isCommentAuthor($id, $userId) {
+        $query = "SELECT * FROM product_comments WHERE id = {$id} AND user_id = {$userId}";
+
+        var_dump($query);
+        $stm = $this->pdo->prepare($query);
+        $stm->execute();
+        
+        if(empty($stm->fetch())) {
+            return false;
+        }
+
+        return true;
+    }
 }

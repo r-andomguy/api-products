@@ -5,6 +5,7 @@ namespace Contatoseguro\TesteBackend\Controller;
 use Contatoseguro\TesteBackend\Model\Product;
 use Contatoseguro\TesteBackend\Service\CategoryService;
 use Contatoseguro\TesteBackend\Service\ProductService;
+use DateTime;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -96,6 +97,14 @@ class ProductController
         return $response->withStatus(200);
     }
 
+    public function getComments(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $stm = $this->service->getComments($args['id']);
+
+        $response->getBody()->write(json_encode($stm));
+        return $response->withStatus(200);
+    }
+
     public function insertOne(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $body = $request->getParsedBody();
@@ -106,6 +115,36 @@ class ProductController
         } else {
             return $response->withStatus(404);
         }
+    }
+
+    public function insertComment(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $body = $request->getParsedBody();
+        $body['productId'] = (int) $args['id'];
+        $body['createdAt'] = date("Y-m-d h:i:s");
+        $userId = $request->getHeader('admin_user_id')[0];
+
+        $stm = $this->service->insertComment($body, $userId);
+        
+        if(!$stm) {
+            return $response->withStatus(404, 'Não foi possível salvar o comentário para este produto.');
+        }
+
+        return $response->withStatus(code: 200);
+    }
+
+    public function insertCommentLike(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $body = $request->getParsedBody();
+        $body['createdAt'] = date("Y-m-d h:i:s");
+
+        $stm = $this->service->insertCommentLike($body, $args['id_comment']);
+        
+        if(!$stm) {
+            return $response->withStatus(404, 'Não foi possível curtir o comentário.');
+        }
+
+        return $response->withStatus(code: 200);
     }
 
     public function updateOne(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
@@ -128,6 +167,17 @@ class ProductController
             return $response->withStatus(200);
         } else {
             return $response->withStatus(404);
+        }
+    }
+
+    public function deleteComment(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $adminUserId = $request->getHeader('admin_user_id')[0];
+
+        if ($this->service->deleteComment($args['id_comment'], $adminUserId)) {
+            return $response->withStatus(200);
+        } else {
+            return $response->withStatus(404, 'Não foi possível excluir o comentário.');
         }
     }
 

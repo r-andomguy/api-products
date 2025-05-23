@@ -20,10 +20,14 @@ $app->group('/products', function (RouteCollectorProxy $group) {
     $group->get('', [ProductController::class, 'getAll']);
     $group->get('/{id}', [ProductController::class, 'getOne']);
     $group->get('/last-edit/{id}', [ProductController::class, 'getLastLog']);
+    $group->get('/{id}/comments', [ProductController::class, 'getComments']);
     $group->post('', [ProductController::class, 'insertOne']);
+    $group->post('/{id}/comment/{id_comment}/like', [ProductController::class, 'insertCommentLike']);
+    $group->post('/{id}/comment', [ProductController::class, 'insertComment']);
     $group->put('/{id}', [ProductController::class, 'updateOne']);
     $group->put('/stock/{id}', [ProductController::class, 'updateProductStock']);
     $group->delete('/{id}', [ProductController::class, 'deleteOne']);
+    $group->delete('/{id}/comment/{id_comment}', [ProductController::class, 'deleteComment']);
 });
 
 $app->group('/categories', function (RouteCollectorProxy $group) {
