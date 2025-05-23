@@ -46,30 +46,45 @@ class ProductController
 
     public function getOne(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        $stm = $this->service->getOne($args['id']);
-        $product = Product::hydrateByFetch($stm->fetch());
-        
+        $stock = $request->getQueryParams()['stock'] ?? null;
         $adminUserId = $request->getHeader('admin_user_id')[0];
-        $productCategories = $this->categoryService->getProductCategory($product->id)->fetchAll();
         $lang = $request->getQueryParams()['lang'] ?? 'en';
         $data = [];
+
+        $stm = $this->service->getOne($args['id'], (int) $stock);
+        $dataProduct = $stm->fetch();
+
+        if(!$dataProduct) {
+            return $response->withStatus(404, 'Erro ao buscar produto.');
+        }
+
+        $product = Product::hydrateByFetch($dataProduct);
+        $productCategories = $this->categoryService->getProductCategory($product->id)->fetchAll();
         
         if($productCategories) {
             foreach($productCategories as $category) {
                 $fetchedCategory = $this->categoryService->getOne($adminUserId, $category->id)->fetch();        
                 $productClone = clone $product;
                 $productClone->setCategory($fetchedCategory->title);
+                
+                $categoryTitle = $productClone->title;
 
                 if($lang) {
-                    $title = $this->service->getCategoryTranslation($category->id, $lang);
-                    $fetchedCategory->title = $title;
+                    $categoryTitle = $this->service->getCategoryTranslation($category->id, $lang);
                 }
-
-                $data[] = $fetchedCategory;
+                
+                $data[] = [
+                    'category' => $categoryTitle,
+                    'id' => $productClone->id,
+                    'companyId' => $productClone->companyId,
+                    'title' => $productClone->title,
+                    'price' => $productClone->price,
+                    'stock' => $productClone->stock,
+                ];
             }
         }
         
-        $response->getBody()->write(json_encode($data));
+        $response->getBody()->write(json_encode(value: $data));
         return $response->withStatus(200);
     }
 
@@ -115,4 +130,17 @@ class ProductController
             return $response->withStatus(404);
         }
     }
+
+    public function updateProductStock(ServerRequestInterface $request, ResponseInterface $response, array $args)
+    {
+        $body = $request->getParsedBody();
+        $stock = $this->service->updateProductStock($args['id'], $body['stock']);
+
+        if(!$stock) {
+             return $response->withStatus(404, 'Erro ao atualizar estoque do produto.');
+        }
+
+        return $response->withStatus(200, 'Estoque atualizado com sucesso.');
+    }
+
 }

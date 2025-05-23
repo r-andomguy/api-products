@@ -6,8 +6,9 @@ class CreateCategoryTranslationTable extends AbstractMigration
 {
 public function up(): void
     {
+        
         $this->execute("
-            CREATE TABLE category_translation (
+            CREATE TABLE IF NOT EXISTS category_translation (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 category_id INT NOT NULL,
                 lang_code VARCHAR(10) NOT NULL,

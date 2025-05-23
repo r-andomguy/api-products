@@ -129,9 +129,9 @@ POST "$base_url/categories/:id"
 
 ### Estoque
 Além das informações já disponíveis do produto, desejo acrescentar também uma contagem de estoque para cada, a qual deve seguir algumas regras:
-- [ ] Posso cadastrar a quantidade do estoque assim que cadastro um produto, mas se não for informado assumo que o estoque é _0_;
-- [ ] Posso atualizar o estoque de um produto;
-- [ ] Ao buscar um produto, posso filtrar por uma quantidade mínima em estoque.
+- [X] Posso cadastrar a quantidade do estoque assim que cadastro um produto, mas se não for informado assumo que o estoque é _0_;
+- [X] Posso atualizar o estoque de um produto;
+- [X] Ao buscar um produto, posso filtrar por uma quantidade mínima em estoque.
 
 ### Comentários
 Quero que os usuários do sistema possam discutir sobre os produtos em uma área de comentários.
@@ -183,3 +183,4 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 - Para a demanda de listar o último log, depois de ler me perguntei se era pra implementar uma nova rota, pois o report já mostra essas informações. Mas como entendi que precisa ser uma nova rota, fui no arquivos de rotas, adicionei um novo parâmetro $group->get('/last-edit/{id}', [ProductController::class, 'getLastLog']). No meu controller adicionei essa nova função getLastLog, que segue o mesmo padrão de busca existente na função  getLog - porém a ideia é ordenar pelo timestamp decrescente e limit para buscar apenas 1 registro. Essa nova rota foi adicionada no postman e testada, onde verifiquei que retornou o registro correto para o iphone 8.
 - Correção do teste unitário: o erro estava no teste testHydrateByFetch, onde era feita um teste se o preço do produto era 99.99 a partir do resultado do $product = Product::hydrateByFetch($fetch). O preço do produto está sendo retornado como 99, ou seja, um inteiro, ao invés de float - assim, verifiquei a função na model Product e ajustei para retornar valor float.
 - Para a demanda da função para adicionar traduções, creio que o grande desafio tenha sido trabalhar com transactions ao inserir os dados na nova tabela category_translations, pois é necessário para não dar erro no banco de dados ao inserir vários dados rapidamente. Para os ajustes ao buscar produtos/categorias com o parâmetro lang, creio que essa foi a parte mais legal pois foi uma boa prática de manipulação de dados para retornar a informação conforme solicitado. Um ponto extra é que vale implementar uma validação para quando a função de inserir os dados na nova tabela retorna o erro de campo unique, pois já existem dados com os valores que estão tentando cadastrar.
+- Referente a implementação do estoque, vejo essa demanda como algo bem simples: adicionar uma nova coluna usando migration, estabelecer o novo campo no Product model. Depois foi necessário apenas adicionar a nova função de update do product (no controller e service), a rota para alterar o estoque, ajustar a criação de produtos e depois corrigir a demanda de busca de produto. Nessa busca precisei corrigir os dados enviados, pois não estava retornando os campos de product e foi um erro que não percebi ao implementar as correções de categoria/tradução. 

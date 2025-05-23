@@ -38,13 +38,19 @@ class ProductService
         return $stm;
     }
 
-    public function getOne($id)
+    public function getOne($id, $stock)
     {
-        $stm = $this->pdo->prepare("
+        $query = "
             SELECT *
             FROM product
             WHERE id = {$id}
-        ");
+        ";
+
+        if($stock !== null) {
+            $query .= " AND stock >= {$stock}";
+        }
+
+        $stm = $this->pdo->prepare($query);
         $stm->execute();
 
         return $stm;
@@ -52,19 +58,24 @@ class ProductService
 
     public function insertOne($body, $adminUserId)
     {
+        $stock = $body['stock'] ?? 0;
         $stm = $this->pdo->prepare("
             INSERT INTO product (
                 company_id,
                 title,
                 price,
-                active
+                active,
+                stock
             ) VALUES (
                 {$body['company_id']},
                 '{$body['title']}',
                 {$body['price']},
-                {$body['active']}
+                {$body['active']},
+                {$stock}
             )
         ");
+
+        var_dump($stm);
         if (!$stm->execute())
             return false;
 
@@ -235,4 +246,28 @@ class ProductService
 
         return  $stm->fetchColumn();
     }
+
+    public function updateProductStock(int $id, int $stock)
+    {
+
+        $product = $this->getOne($id, null)->fetch();
+
+        if(!$product) {
+            return false;
+        }
+
+        $query = "
+            UPDATE product
+            SET stock = {$stock}
+            WHERE id = {$id}
+        ";
+        $stm = $this->pdo->prepare($query);
+        
+        if(!$stm->execute()){
+            return false;
+        }
+
+        return true;
+    }
+
 }
