@@ -144,7 +144,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}{{products}}/10?lang=pt",
+							"raw": "{{base_url}}{{products}}/10?lang=pt&stock=10",
 							"host": [
 								"{{base_url}}{{products}}"
 							],
@@ -155,6 +155,10 @@
 								{
 									"key": "lang",
 									"value": "pt"
+								},
+								{
+									"key": "stock",
+									"value": "10"
 								}
 							]
 						}
@@ -202,6 +206,46 @@
 					"response": []
 				},
 				{
+					"name": "getComments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "admin_user_id",
+								"value": "1"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}{{products}}/10/comments",
+							"host": [
+								"{{base_url}}{{products}}"
+							],
+							"path": [
+								"10",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "insertOne",
 					"event": [
 						{
@@ -234,7 +278,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"company_id\": 1,\n\t\"title\": \"nome do produto\",\n\t\"price\": 123.4,\n\t\"active\": true,\n\t\"category_id\": 1\n}",
+							"raw": "{\n\t\"company_id\": 1,\n\t\"title\": \"novo produto sem estoque no cadastro\",\n\t\"price\": 123.4,\n\t\"active\": true,\n\t\"category_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -242,12 +286,117 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}{{products}}/",
+							"raw": "{{base_url}}{{products}}",
+							"host": [
+								"{{base_url}}{{products}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "insertCommentLike",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "admin_user_id",
+								"value": "1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{products}}/10/comment/1/like",
 							"host": [
 								"{{base_url}}{{products}}"
 							],
 							"path": [
-								""
+								"10",
+								"comment",
+								"1",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "insertComment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "admin_user_id",
+								"value": "2"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"content\": \"Ótimo produto!\",\n    \"parentId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{products}}/10/comment",
+							"host": [
+								"{{base_url}}{{products}}"
+							],
+							"path": [
+								"10",
+								"comment"
 							]
 						}
 					},
@@ -306,6 +455,59 @@
 					"response": []
 				},
 				{
+					"name": "updateProductStock",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "admin_user_id",
+								"value": "1"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"stock\": 100\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}{{products}}/stock/20",
+							"host": [
+								"{{base_url}}{{products}}"
+							],
+							"path": [
+								"stock",
+								"20"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "deleteOne",
 					"event": [
 						{
@@ -339,6 +541,47 @@
 							],
 							"path": [
 								"19"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteComment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "admin_user_id",
+								"value": "2"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}{{products}}/19/comment/2",
+							"host": [
+								"{{base_url}}{{products}}"
+							],
+							"path": [
+								"19",
+								"comment",
+								"2"
 							]
 						}
 					},

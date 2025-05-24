@@ -159,9 +159,9 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 - A funcionalidade de **PHP** deve rodar na porta **8000** do host.
 
 ### Itens obrigatórios
-- [ ] Criar um ambiente docker que sobe a aplicação **PHP** na porta **8000**;
-- [ ] Possibilitar que as **_migrations_ possam ser executadas/criadas por docker** (especificar comando);
-- [ ] Possibilitar que os **_testes unitários_ sejam executados por docker** (especificar comando).
+- [X] Criar um ambiente docker que sobe a aplicação **PHP** na porta **8000**;
+- [X] Possibilitar que as **_migrations_ possam ser executadas/criadas por docker** (especificar comando);
+- [X] Possibilitar que os **_testes unitários_ sejam executados por docker** (especificar comando).
 
 ### Desafios
 - [ ] Substituir o banco serverless **SQLite** por um banco como **MySQL**/**PostgreSQL**/outro e servir por container;
