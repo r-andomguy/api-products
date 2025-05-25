@@ -165,14 +165,15 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 
 ### Desafios
 - [ ] Substituir o banco serverless **SQLite** por um banco como **MySQL**/**PostgreSQL**/outro e servir por container;
-- [ ] Escrever **novos testes unitários** para funcionalidades faltantes;
-- [ ] Implementar um **Linter** e disponibilizar por docker (especificar comando);
-- [ ] Implementar **análise estática** e disponibilizar por docker (especificar comando);
-- [ ] Escrever um script "_`check_deploy.sh`_" que faz todas as validações implementadas como uma pipeline e determina se o código está pronto para produção.
+- [X] Escrever **novos testes unitários** para funcionalidades faltantes;
+- [X] Implementar um **Linter** e disponibilizar por docker (especificar comando);
+- [X] Implementar **análise estática** e disponibilizar por docker (especificar comando);
+- [X] Escrever um script "_`check_deploy.sh`_" que faz todas as validações implementadas como uma pipeline e determina se o código está pronto para produção.
 
 ## Suas Respostas, Dúvidas e Observações
 
 ### Observações 
+- Uma observação: estou usando o sistema operacional Windows para programar as soluções para esse projeto.
 - Adicionada a dependência psr/http-message pois os controllers estavam apresentando erro ao verificar as funções utilizadas das classes de Psr.
 - Verificado que no postman, as rotas que buscam todos os registros (getAll de products e categories), estavam com um "/" no fim da url declarada. Essa barra foi retirada pois estava causando erro na hora de buscar os registros.
 - Referente a busca de todos os produtos, a query de getAll, no ProductService estava com um problema de lógica pois realizava um INNER JOIN com a tabela category usando o pc.id (product_category.id) ao invés de pc.cat_it (product_category.cat_id). Foi implementado a ligação correta de pc.cat_id = c.id (category.id);
@@ -187,6 +188,10 @@ Para efetuar a criação do ambiente docker, partimos de algumas premissas:
 - Após implementar a parte de comentários creio que aqui tenha sido um ótimo desafio para esse teste. Estrutruar todas as estapas foi o mais desafiador, sendo que olhando para essa implementação creio que vale a pena separar do ProductController e criar um ProductCommentsController (o mesmo vale para o service). Mudei as migrations novas algumas vezes, porém o resultado final parece atender as demandas do cliente. Vale ressaltar que sempre é bom estabelecer validações e mensagens de erro para ajudar tanto o usuário quanto o desenvolvedor que aplicar manutenção para cada demanda implementada.
 
 ## Ambiente docker criado: 
+> Observação: este projeto foi desenvolvido em um ambiente Windows. Os comandos Docker podem exigir ajustes se forem executados em sistemas Linux/macOS (principalmente em relação a volumes e paths).
 ### Comandos:  
+- **docker build -t teste-backend-jr-app .** (para criar a imagem no docker)
+- **docker run --rm -v ${PWD}:/app -w /app teste-backend-jr-app ./vendor/bin/phpstan analyse src** (para rodár análise do projeto)
+- **docker run --rm -v "${PWD}:/app" -w /app teste-backend-jr-app ./check_deploy.sh** (para rodar verificação do deploy)
 - **docker-compose run --rm app composer test** (para rodar os testes unitários)
 - **docker-compose run --rm app composer migrate** (para rodar as migrações)

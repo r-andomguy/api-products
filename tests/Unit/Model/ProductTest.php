@@ -2,6 +2,7 @@
 
 namespace ContatoSeguro\Tests\Unit\Model;
 
+use Contatoseguro\TesteBackend\Service\ProductService;
 use PHPUnit\Framework\TestCase;
 use Contatoseguro\TesteBackend\Model\Product;
 
@@ -49,4 +50,40 @@ class ProductTest extends TestCase
 
     $this->assertEquals('Electronics', $product->category);
   }
+
+  public function testInsertComment(): void
+  {
+    $productService = new ProductService();
+
+    $body = [
+      'productId' => 1,
+      'content' => 'Ótimo produto!',
+      'parentId' => null,
+      'createdAt' => date("Y-m-d H:i:s")
+    ];
+
+    $userId = 1;
+
+    $insertResult = $productService->insertComment($body, $userId);
+
+    $this->assertIsObject($insertResult);
+    $this->assertInstanceOf(\PDOStatement::class, $insertResult);
+  }
+
+  public function testGetComments(): void {
+    $productService = new ProductService();
+    $comments = $productService->getComments(1);
+
+    $this->assertIsArray($comments);
+    $this->assertNotEmpty($comments);
+
+    $comment = $comments[0];
+
+    $this->assertEquals(1, $comment->product_id);
+    $this->assertEquals(1, $comment->user_id);
+    $this->assertEquals('Ótimo produto!', $comment->content);
+    $this->assertNull($comment->parent_id);
+    $this->assertEquals('rivers', $comment->user_name);
+  }
+  
 }

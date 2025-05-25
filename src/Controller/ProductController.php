@@ -29,7 +29,7 @@ class ProductController
         $orderBy = null;
 
         if (isset($queryParams['active'])) {
-          $filters = $this->service->setFilter('active', $queryParams['active']) . ' ';
+            $filters = $this->service->setFilter('active', $queryParams['active']) . ' ';
         }
 
         if (isset($queryParams['category'])) {
@@ -40,7 +40,7 @@ class ProductController
             $orderBy = $this->service->setOrderBy($queryParams['created_at']);
         }
 
-        $stm = $this->service->getAll($adminUserId, $filters, $orderBy,strtolower($lang));
+        $stm = $this->service->getAll($adminUserId, $filters, $orderBy, strtolower($lang));
         $response->getBody()->write(json_encode($stm->fetchAll()));
         return $response->withStatus(200);
     }
@@ -55,25 +55,25 @@ class ProductController
         $stm = $this->service->getOne($args['id'], (int) $stock);
         $dataProduct = $stm->fetch();
 
-        if(!$dataProduct) {
+        if (!$dataProduct) {
             return $response->withStatus(404, 'Erro ao buscar produto.');
         }
 
         $product = Product::hydrateByFetch($dataProduct);
         $productCategories = $this->categoryService->getProductCategory($product->id)->fetchAll();
-        
-        if($productCategories) {
-            foreach($productCategories as $category) {
-                $fetchedCategory = $this->categoryService->getOne($adminUserId, $category->id)->fetch();        
+
+        if ($productCategories) {
+            foreach ($productCategories as $category) {
+                $fetchedCategory = $this->categoryService->getOne($adminUserId, $category->id)->fetch();
                 $productClone = clone $product;
                 $productClone->setCategory($fetchedCategory->title);
-                
+
                 $categoryTitle = $productClone->title;
 
-                if($lang) {
+                if ($lang) {
                     $categoryTitle = $this->service->getCategoryTranslation($category->id, $lang);
                 }
-                
+
                 $data[] = [
                     'category' => $categoryTitle,
                     'id' => $productClone->id,
@@ -84,7 +84,7 @@ class ProductController
                 ];
             }
         }
-        
+
         $response->getBody()->write(json_encode(value: $data));
         return $response->withStatus(200);
     }
@@ -125,8 +125,8 @@ class ProductController
         $userId = $request->getHeader('admin_user_id')[0];
 
         $stm = $this->service->insertComment($body, $userId);
-        
-        if(!$stm) {
+
+        if (!$stm) {
             return $response->withStatus(404, 'Não foi possível salvar o comentário para este produto.');
         }
 
@@ -139,8 +139,8 @@ class ProductController
         $body['createdAt'] = date("Y-m-d h:i:s");
 
         $stm = $this->service->insertCommentLike($body, $args['id_comment']);
-        
-        if(!$stm) {
+
+        if (!$stm) {
             return $response->withStatus(404, 'Não foi possível curtir o comentário.');
         }
 
@@ -186,11 +186,10 @@ class ProductController
         $body = $request->getParsedBody();
         $stock = $this->service->updateProductStock($args['id'], $body['stock']);
 
-        if(!$stock) {
+        if (!$stock) {
              return $response->withStatus(404, 'Erro ao atualizar estoque do produto.');
         }
 
         return $response->withStatus(200, 'Estoque atualizado com sucesso.');
     }
-
 }

@@ -7,11 +7,12 @@ use Contatoseguro\TesteBackend\Config\DB;
 class CategoryService
 {
     private \PDO $pdo;
-    public function __construct() {
+    public function __construct()
+    {
         $this->pdo = DB::connect();
     }
 
-    public function getAll($adminUserId, $lang  = 'en')
+    public function getAll($adminUserId, $lang = 'en')
     {
         $query = "
             SELECT c.company_id,
@@ -28,7 +29,7 @@ class CategoryService
         return $stm;
     }
 
-    public function getOne($adminUserId, $categoryId, $lang  = 'en')
+    public function getOne($adminUserId, $categoryId, $lang = 'en')
     {
         $query = "
             SELECT c.company_id,
@@ -118,7 +119,7 @@ class CategoryService
         ";
 
         $stm = $this->pdo->prepare($query);
-        
+
         $stm->execute();
 
         return $stm->fetch()->company_id;
@@ -147,5 +148,4 @@ class CategoryService
         $this->pdo->commit();
         return ['success' => true];
     }
-    
 }

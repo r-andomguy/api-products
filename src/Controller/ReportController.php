@@ -11,17 +11,17 @@ class ReportController
 {
     private ProductService $productService;
     private CompanyService $companyService;
-    
+
     public function __construct()
     {
         $this->productService = new ProductService();
         $this->companyService = new CompanyService();
     }
-    
+
     public function generate(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $adminUserId = $request->getHeader('admin_user_id')[0];
-        
+
         $data = [];
         $data[] = [
             'Id do produto',
@@ -32,7 +32,7 @@ class ReportController
             'Data de Criação',
             'Logs de Alterações'
         ];
-        
+
         $stm = $this->productService->getAll($adminUserId, null, null);
         $products = $stm->fetchAll();
 
@@ -52,22 +52,22 @@ class ReportController
 
             if (count($productLogs) > 0) {
                 foreach ($productLogs as $log) {
-                    $action = $actionTranslations[$log->action] ?? $log->action; 
+                    $action = $actionTranslations[$log->action] ?? $log->action;
                     $logs .= ucwords($log->admin_name ?? 'Usuário Desconhecido') . ', ' . $action . $log->timestamp . '<br>';
                 }
             } else {
                 $logs = 'Sem alterações registradas';
             }
 
-            $data[$i+1][] = $product->id;
-            $data[$i+1][] = $companyName;
-            $data[$i+1][] = $product->title;
-            $data[$i+1][] = $product->price;
-            $data[$i+1][] = $product->category;
-            $data[$i+1][] = $product->created_at;
-            $data[$i+1][] = $logs;
+            $data[$i + 1][] = $product->id;
+            $data[$i + 1][] = $companyName;
+            $data[$i + 1][] = $product->title;
+            $data[$i + 1][] = $product->price;
+            $data[$i + 1][] = $product->category;
+            $data[$i + 1][] = $product->created_at;
+            $data[$i + 1][] = $logs;
         }
-        
+
         $report = "<table style='font-size: 10px;'>";
         foreach ($data as $row) {
             $report .= "<tr>";
@@ -77,7 +77,7 @@ class ReportController
             $report .= "</tr>";
         }
         $report .= "</table>";
-        
+
         $response->getBody()->write($report);
         return $response->withStatus(200)->withHeader('Content-Type', 'text/html');
     }

@@ -24,14 +24,14 @@ class ProductService
             WHERE p.company_id = {$adminUserId}
         ";
 
-        if($filters !== null) {
+        if ($filters !== null) {
             $query .= $filters;
-        } 
-        
-        if($orderBy !== null) {
+        }
+
+        if ($orderBy !== null) {
             $query .= $orderBy;
         }
-        
+
         $stm = $this->pdo->prepare($query);
         $stm->execute();
 
@@ -46,7 +46,7 @@ class ProductService
             WHERE id = {$id}
         ";
 
-        if($stock !== null) {
+        if ($stock !== null) {
             $query .= " AND stock >= {$stock}";
         }
 
@@ -83,7 +83,7 @@ class ProductService
                     $allComments[] = $comment;
                 }
             }
-            
+
             return $allComments;
         };
 
@@ -109,8 +109,9 @@ class ProductService
             )
         ");
 
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
+        }
 
         $productId = $this->pdo->lastInsertId();
 
@@ -123,8 +124,9 @@ class ProductService
                 {$body['category_id']}
             );
         ");
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
+        }
 
         $stm = $this->pdo->prepare("
             INSERT INTO product_log (
@@ -144,9 +146,9 @@ class ProductService
     public function insertComment($body, $userId)
     {
         $parentId = $body['parentId'] ?? null;
-        
-        if($parentId !== null && !$this->hasParentId($parentId)){
-           $parentId = null;
+
+        if ($parentId !== null && !$this->hasParentId($parentId)) {
+            $parentId = null;
         }
 
         $query = "INSERT INTO product_comments (
@@ -155,19 +157,17 @@ class ProductService
                 content, 
                 parent_id,
                 created_at
-            ) VALUES (
-                {$body['productId']},
-                {$userId},
-                '{$body['content']}',
-                {$parentId},
-                '{$body['createdAt']}'
-            )";
-        var_dump($query);
+            ) VALUES (?, ?, ?, ?, ?)";
+
         $stm = $this->pdo->prepare($query);
-        
-        if(!$stm->execute()){
-            return false;
-        }
+
+        $stm->execute([
+            $body['productId'],
+            $userId,
+            $body['content'],
+            $parentId,
+            $body['createdAt']
+        ]);
 
         return $stm;
     }
@@ -201,16 +201,18 @@ class ProductService
                 active = {$body['active']}
             WHERE id = {$id}
         ");
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
+        }
 
         $stm = $this->pdo->prepare("
             UPDATE product_category
             SET cat_id = {$body['category_id']}
             WHERE product_id = {$id}
         ");
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
+        }
 
         $stm = $this->pdo->prepare("
             INSERT INTO product_log (
@@ -232,12 +234,14 @@ class ProductService
         $stm = $this->pdo->prepare("
             DELETE FROM product_category WHERE product_id = {$id}
         ");
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
-        
+        }
+
         $stm = $this->pdo->prepare("DELETE FROM product WHERE id = {$id}");
-        if (!$stm->execute())
+        if (!$stm->execute()) {
             return false;
+        }
 
         $stm = $this->pdo->prepare("
             INSERT INTO product_log (
@@ -256,14 +260,14 @@ class ProductService
 
     public function deleteComment($idComment, $userId)
     {
-        if(!$this->isCommentAuthor($idComment, $userId)) {
+        if (!$this->isCommentAuthor($idComment, $userId)) {
             return false;
         }
 
         $stm = $this->pdo->prepare("
             DELETE FROM product_comments WHERE id = {$idComment} AND user_id = {$userId}
         ");
-       
+
         if (!$stm->execute()) {
             return false;
         }
@@ -308,12 +312,12 @@ class ProductService
         $dir = strtoupper($direction);
 
         if (!in_array($dir, $allowed)) {
-            $dir = 'DESC'; 
+            $dir = 'DESC';
         }
 
         return " ORDER BY p.created_at $dir";
     }
-    
+
     public function setFilter(string $key, $value): string
     {
         $filter = '';
@@ -330,18 +334,18 @@ class ProductService
                 break;
 
             default:
-            break;
+                break;
         }
 
         return $filter;
     }
 
-    public function getCategoryTranslation($categoryId, $lang = 'en') 
+    public function getCategoryTranslation($categoryId, $lang = 'en')
     {
         $query = "SELECT (CASE WHEN ct.label IS NULL THEN c.title ELSE ct.label END) AS title 
                   FROM category_translation ct
                     LEFT JOIN category c ON ct.category_id = c.id
-                  WHERE ct.category_id = {$categoryId} AND ct.lang_code IN ('{$lang}')"; 
+                  WHERE ct.category_id = {$categoryId} AND ct.lang_code IN ('{$lang}')";
         $stm = $this->pdo->prepare($query);
         $stm->execute();
 
@@ -353,7 +357,7 @@ class ProductService
 
         $product = $this->getOne($id, null)->fetch();
 
-        if(!$product) {
+        if (!$product) {
             return false;
         }
 
@@ -363,35 +367,37 @@ class ProductService
             WHERE id = {$id}
         ";
         $stm = $this->pdo->prepare($query);
-        
-        if(!$stm->execute()){
+
+        if (!$stm->execute()) {
             return false;
         }
 
         return true;
     }
 
-    public function hasParentId($id) {
+    public function hasParentId($id)
+    {
         $query = "SELECT * FROM product_comments WHERE id = {$id}";
 
         $stm = $this->pdo->prepare($query);
         $stm->execute();
-        
-        if(empty($stm->fetch())) {
+
+        if (empty($stm->fetch())) {
             return false;
         }
 
         return true;
     }
 
-    public function isCommentAuthor($id, $userId) {
+    public function isCommentAuthor($id, $userId)
+    {
         $query = "SELECT * FROM product_comments WHERE id = {$id} AND user_id = {$userId}";
 
         var_dump($query);
         $stm = $this->pdo->prepare($query);
         $stm->execute();
-        
-        if(empty($stm->fetch())) {
+
+        if (empty($stm->fetch())) {
             return false;
         }
 

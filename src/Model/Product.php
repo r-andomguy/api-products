@@ -4,7 +4,6 @@ namespace Contatoseguro\TesteBackend\Model;
 
 class Product
 {
-
     public $category;
 
     public function __construct(
@@ -27,7 +26,7 @@ class Product
             (float)$fetch->price,
             (bool)$fetch->active,
             (string)$fetch->created_at,
-             (int)$fetch->stock
+            (int)$fetch->stock
         );
     }
 

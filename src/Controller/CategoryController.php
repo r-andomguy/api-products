@@ -71,14 +71,14 @@ class CategoryController
         }
     }
 
-    public function insertTranslations(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface 
+    public function insertTranslations(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $data = $request->getParsedBody();
         $categoryId = $args['id'];
 
         $result = $this->service->insertTranslations($categoryId, $data['translations'] ?? []);
 
-        if($result['success']) {
+        if ($result['success']) {
             return $response->withStatus(200);
         } else {
             $response->getBody()->write(json_encode(['error' => $result['error']]));
